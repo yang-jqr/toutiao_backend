@@ -39,30 +39,33 @@ toutiao_backend/
 # 进入项目目录
 cd toutiao_backend
 
-# 1) 安装依赖（任选）
+# 1) 配置环境变量（复制示例并填入你的 MySQL 密码）
+cp .env.example .env     # Windows: copy .env.example .env
+#    然后编辑 .env，把 DB_PASSWORD 改成你的 MySQL 密码
+
+# 2) 安装依赖（任选）
 pip install "fastapi==0.125.0" "uvicorn==0.38.0" "sqlalchemy==2.0.45" \
   "pydantic==2.12.5" "passlib==1.7.4" "bcrypt==3.2.2" "redis==7.1.0" \
-  "aiomysql==0.3.2"
+  "aiomysql==0.3.2" "python-dotenv==1.2.1"
 
-# 2) 启动
+# 3) 启动
 uvicorn main:app --reload --port 8000
 ```
 
 首次启动会自动创建 `news_app` 库、建好 6 张表、填充 8 个分类与若干新闻。
 接口文档：http://127.0.0.1:8000/docs
 
-> 若 MySQL 账号密码不是默认的 `root / 13107256053y`，用环境变量覆盖：
-> `set DB_PASSWORD=你的密码 && uvicorn main:app --port 8000`
+> `.env` 已在 `.gitignore` 中忽略，不会上传 GitHub；仓库只提交无密码的 `.env.example`。
 
-## 配置项（环境变量）
+## 配置项（环境变量 / .env 文件）
 
 | 变量 | 默认值 | 说明 |
 |---|---|---|
-| `DB_USER` / `DB_PASSWORD` | `root` / `13107256053y` | MySQL 账号密码 |
+| `DB_USER` / `DB_PASSWORD` | `root` / 空 | MySQL 账号密码（密码必须填） |
 | `DB_HOST` / `DB_PORT` | `localhost` / `3306` | MySQL 地址 |
 | `DB_NAME` | `news_app` | 数据库名 |
 | `DB_ECHO` | `0` | `1` 时打印 SQL 日志 |
-| `REDIS_HOST` / `REDIS_PORT` / `REDIS_DB` | `localhost` / `6379` / `0` | Redis（见 config/cache_conf.py） |
+| `REDIS_HOST` / `REDIS_PORT` / `REDIS_DB` | `localhost` / `6379` / `0` | Redis |
 
 ## 接口清单（22 条）
 

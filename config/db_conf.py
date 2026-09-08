@@ -5,13 +5,18 @@
 
 # 导入 SQLAlchemy 异步组件：创建引擎 / 创建会话工厂 / 会话类型
 import os
+
+from dotenv import load_dotenv
+
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
 
 # 1. 数据库连接 URL
 # 格式：mysql+aiomysql://用户名:密码@主机:端口/库名?charset=编码
-# 默认使用课程账号密码，可用环境变量覆盖
+# 配置从 .env 读取（见项目根目录 .env.example），代码内不含任何明文密码
+load_dotenv()
+
 DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "13107256053y")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")  # 必须通过 .env 或环境变量提供
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "3306")
 DB_NAME = os.getenv("DB_NAME", "news_app")

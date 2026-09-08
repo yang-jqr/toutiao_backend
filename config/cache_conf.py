@@ -5,23 +5,22 @@
 # ============================================================
 
 import json  # JSON 序列化/反序列化（存列表/字典用）
+import os
 from typing import Any  # 任意类型
+
+from dotenv import load_dotenv
 
 import redis.asyncio as redis  # Redis 异步客户端
 
 # ============================================================
 # Redis 连接配置（集中管理，避免魔法数字）
-# 为什么不直接写死在 redis.Redis(...) 调用里？
-#   1. 配置集中在一处，好改：将来 Redis 换地址/端口，只改这里，
-#      不用在业务代码里翻找。
-#   2. 有名字可读性高：REDIS_PORT = 6379 一看就知道是端口；
-#      直接写 6379 就是"魔法数字"，别人读代码要猜含义。
-#   3. 为将来抽 .env 环境变量做准备：以后改成
-#      REDIS_HOST = os.getenv("REDIS_HOST", "localhost") 即可，改动最小。
+# 配置从 .env 读取（见项目根目录 .env.example）
 # ============================================================
-REDIS_HOST = "localhost"  # Redis 服务器地址
-REDIS_PORT = 6379         # Redis 默认端口
-REDIS_DB = 0              # 数据库编号（0~15）
+load_dotenv()
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")  # Redis 服务器地址
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))  # Redis 默认端口
+REDIS_DB = int(os.getenv("REDIS_DB", "0"))         # 数据库编号（0~15）
 
 
 # 创建 Redis 的连接对象（引用上面的配置变量，保证只维护一处配置）

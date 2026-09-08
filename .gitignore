@@ -6,6 +6,10 @@ __pycache__/
 venv/
 env/
 
+# 环境变量（含真实账号密码，绝不提交）
+.env
+*.env
+
 # IDE / 编辑器
 .idea/
 .vscode/
