@@ -18,3 +18,5 @@ env/
 # 日志 / 临时
 *.log
 .DS_Store
+# 本地工具配置：关掉 ruff autofix，防止它悄悄改写课件代码
+.pi-lens.json

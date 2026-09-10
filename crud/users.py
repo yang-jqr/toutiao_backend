@@ -83,7 +83,7 @@ async def get_user_by_token(db: AsyncSession, token: str):
 async def update_user(db: AsyncSession, username: str, user_data: UserUpdateRequest):
     # update(User).where(User.username == username).values(字段=值, 字段=值)
     # user_data 是一个Pydantic类型，得到字典 → ** 解包
-    # 没有设置值的不更新（exclude_unset/exclude_none 过滤）
+    # 没有设置值的不更新（model_dump 把 pydantic 转成字典，exclude_unset 排除未设置的字段，exclude_none 排除为 None 的字段）
     query = update(User).where(User.username == username).values(**user_data.model_dump(
         exclude_unset=True,  # 排除未设置的字段
         exclude_none=True    # 排除为 None 的字段

@@ -23,12 +23,14 @@ async def get_categories(db: AsyncSession, skip: int = 0, limit: int = 100):
         return cached_categories
 
     # 缓存未命中 → 查数据库
+    # 查完必须回填缓存，下次同样的请求才能直接命中（这就是 Cache-Aside 的"回填"环节）
     stmt = select(Category).offset(skip).limit(limit)
     result = await db.execute(stmt)
     categories = result.scalars().all()  # ORM
 
     # 写入缓存（下次请求直接命中）
     if categories:
+        # 只有真查到数据才回填：空结果不写缓存，避免把"查不到"也缓存住
         categories = jsonable_encoder(categories)  # ORM 转成可序列化数据(dict)
         # jsonable_encoder:复杂对象变成json可以认识格式
         await set_cache_categories(categories)
@@ -57,6 +59,7 @@ async def get_news_list(db: AsyncSession, category_id: int, skip: int = 0, limit
 
     # 写入缓存
     if news_list:
+        # 只有查到数据才回填缓存（空列表不写缓存）
         # 先把 ORM 数据 转换 字典才能写入缓存
         # ORM 转成 Pydantic，再转为 字典  更严谨想要哪个选哪个
         # by_alias=False 不适用别名，保存 Python 风格，因为 Redis 数据是给后端用的
@@ -101,6 +104,7 @@ async def get_news_detail(db: AsyncSession, news_id: int):
 
     # 如果查询到数据，存入缓存（不使用别名，保持数据库字段名）
     if news:
+        # 未命中后的回填：下次同一个 news_id 就能直接命中缓存
         # 构造新闻详情数据用于缓存（包含 content 字段）
         # news_dict = {k: v for k, v in news.__dict__.items() if not k.startswith('_')}
         news_dict = NewsDetailResponse.model_validate(news).model_dump(  # ORM → 字典
@@ -142,6 +146,7 @@ async def get_related_news(db: AsyncSession, news_id: int, category_id: int, lim
 
     # 转换为字典格式用于缓存和返回（不使用别名，保持数据库字段名）
     if related_news:
+        # 未命中后的回填：上次查库的结果存进缓存，下次同 id+分类直接命中
         related_data = [
             RelatedNewsResponse.model_validate(news).model_dump(by_alias=False, mode="json")
             for news in related_news
@@ -150,7 +155,7 @@ async def get_related_news(db: AsyncSession, news_id: int, category_id: int, lim
         return related_data
 
     # 没有相关新闻，返回空列表
-    return []
+    return []  # 查库也没结果 → 直接返回空列表（空结果不缓存，免得把"没有"缓存住）
     # 列表推导式 推导出新闻的核心数据，然后再 return
     # return [{
     #     "id": news_detail.id,

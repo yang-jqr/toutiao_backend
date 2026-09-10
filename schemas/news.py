@@ -1,5 +1,8 @@
 # ============================================================
 # schemas 层：news.py —— 新闻详情/相关新闻 响应模型
+# 本文件存放新闻模块的 Pydantic 模型（请求体校验 / 响应序列化）：
+#   RelatedNewsResponse —— 相关新闻简化项（只要 id/title/image/views）
+#   NewsDetailResponse  —— 新闻详情响应，继承 NewsItemBase 再加 content / relatedNews
 # 职责：参数校验 + 响应数据格式化（驼峰命名给前端）
 # 用途：配合缓存，把 ORM 数据转成可序列化的字典存 Redis
 # ============================================================
@@ -36,6 +39,7 @@ class NewsDetailResponse(NewsItemBase):
         populate_by_name=True,  # 允许别名和字段名兼容
         from_attributes=True    # 允许从 ORM 对象取值
     )
+
 
 
 

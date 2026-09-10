@@ -5,18 +5,26 @@
 # ============================================================
 
 import json  # JSON 序列化/反序列化（存列表/字典用）
-import os
+import os  # os：读取环境变量（Redis 地址/端口来自 .env）
 from typing import Any  # 任意类型
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # load_dotenv：把 .env 文件里的配置加载成环境变量
 
 import redis.asyncio as redis  # Redis 异步客户端
 
 # ============================================================
 # Redis 连接配置（集中管理，避免魔法数字）
+# 为什么不直接写死在 redis.Redis(...) 调用里？
+#   1. 配置集中在一处，好改：将来 Redis 换地址/端口，只改这里，
+#      不用在业务代码里翻找。
+#   2. 有名字可读性高：REDIS_PORT = 6379 一看就知道是端口；
+#      直接写 6379 就是"魔法数字"，别人读代码要猜含义。
+#   3. 现在已经抽到 .env 了：上面这三项都改成从环境变量注入
+#      （REDIS_HOST = os.getenv("REDIS_HOST", "localhost")），
+#      换环境只改 .env，代码零改动。
 # 配置从 .env 读取（见项目根目录 .env.example）
 # ============================================================
-load_dotenv()
+load_dotenv()  # 读取 .env，把配置注入 os.environ
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")  # Redis 服务器地址
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))  # Redis 默认端口

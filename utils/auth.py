@@ -14,6 +14,8 @@ from crud import users              # 用户 crud 操作
 # 整合 根据 Token 查询用户，返回用户（作为依赖项注入到路由）
 async def get_current_user(
         authorization: str = Header(..., alias="Authorization"),  # 从请求头取 Authorization 字段（... 必填）
+        # get_current_user 的核心工作是用 Token 去数据库查用户，而查数据库必须先拿到一个数据库会话(db)，
+        # 所以必须有一个参数来接收它
         db: AsyncSession = Depends(get_db)                        # 依赖注入数据库会话
 ):
     # 前端请求头格式：Authorization: Bearer xxxxx

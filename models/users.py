@@ -4,7 +4,7 @@
 # ============================================================
 
 from datetime import datetime  # 时间类型（创建/更新时间字段）
-from typing import Optional    # 可选类型（允许为 NULL 的字段）
+from typing import Optional    # 可选类型（允许为 NULL 的字段）：optional 可选的、允许为空
 
 # 导入 SQLAlchemy 类型：索引 / 整型 / 字符串 / 枚举 / 时间 / 外键
 from sqlalchemy import Index, Integer, String, Enum, DateTime, ForeignKey
@@ -19,7 +19,7 @@ class User(Base):
     """
     __tablename__ = 'user'  # 对应数据库表名
 
-    # 创建索引
+    # 创建索引：高频发生查询的场景，走索引不用全表搜索，效率高
     __table_args__ = (
         Index('username_UNIQUE', 'username'),  # 用户名索引（配合唯一约束）
         Index('phone_UNIQUE', 'phone'),        # 手机号索引（配合唯一约束）

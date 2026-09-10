@@ -31,7 +31,7 @@ async def check_favorite(
         db: AsyncSession = Depends(get_db)          # 依赖注入：数据库会话
 ):
     # 调用 crud：查询收藏表，判断该用户是否收藏了这条新闻（返回布尔值）
-    is_favorited = await favorite.is_news_favorite(db, user.id, news_id)
+    is_favorited = await favorite.is_news_favorite(db, user.id, news_id)  # 参数按顺序传递 → isFavorite → 整个构造出来 → 模型类
     # 用响应模型格式化（isFavorite 驼峰命名给前端）后返回
     return success_response(message="检查收藏状态成功", data=FavoriteCheckResponse(isFavorite=is_favorited))
 
@@ -53,6 +53,12 @@ async def add_favorite(
 
 # ============================================================
 # 接口3：取消收藏  DELETE /api/favorite/remove?newsId=xx
+# ------------------------------------------------------------
+# 为什么这里用"查询参数"？
+# - 删的是"当前用户 与 某条新闻 的收藏关系"，真正主语是登录用户（Token 决定），newsId 只是筛选条件
+# - 查询参数 = 筛选条件/选项 → ?newsId=5 表示"把当前用户对新闻5的收藏删掉"
+# - 对比历史删除接口用路径参数 /delete/{history_id}，因为那是定位一条独立的记录
+# 记法：路径参数定位资源；查询参数当筛选条件/选项（可省略、可组合）
 # ============================================================
 @router.delete("/remove")
 async def remove_favorite(
@@ -82,6 +88,7 @@ async def get_favorite_list(
     # rows 的每个元素是 (新闻对象, 收藏时间, 收藏id)
     rows, total = await favorite.get_favorite_list(db, user.id, page, page_size)
     # 把每行转成字典：新闻对象的所有字段 + 收藏时间 + 收藏id（** 解包字典）
+    # 列表推导式
     favorite_list = [{
         **news.__dict__,            # 新闻对象的全部字段（id/title/image...）
         "favorite_time": favorite_time,  # 收藏时间
@@ -90,7 +97,7 @@ async def get_favorite_list(
     # 当前已取到的条数（page*page_size）< 总量 → 还有下一页
     has_more = total > page * page_size
 
-    # 组装分页响应（list/total/hasMore）
+    # 组装分页响应（list/total/hasMore）定义响应的模型类
     data = FavoriteListResponse(list=favorite_list, total=total, hasMore=has_more)
     return success_response(message="获取收藏列表成功", data=data)
 

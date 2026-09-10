@@ -17,10 +17,13 @@ from init_db import init_db  # 首次运行自动建库建表 + 种子数据
 app = FastAPI()
 
 # 2.5 启动时初始化数据库（库 → 表 → 种子数据）
-@app.on_event("startup")
+# init_db() 内部三步：① 用不带库名的 SERVER_DATABASE_URL 建库（CREATE DATABASE IF NOT EXISTS）
+#   ② 用 Base.metadata.create_all 建出所有表 ③ 表为空时才写入种子数据，重复启动不会重复插入
+# 用 try...except 包住：初始化失败（比如 MySQL 没启动）只打印日志，不抛异常阻断应用启动
+@app.on_event("startup")  # 注册启动事件：应用启动完成后自动执行 on_startup()
 async def on_startup():
     try:
-        await init_db()
+        await init_db()  # 建库 → 建表 → 空库则填种子数据
         print("[init] 数据库就绪：建表完成，种子数据已填充。")
     except Exception as e:
         print(f"[init] 初始化数据库失败（请确认 MySQL 已启动且账号密码正确）：{e}")
@@ -33,17 +36,17 @@ register_exception_handlers(app)
 # 作用：允许浏览器跨域名/跨端口请求本后端，否则前端 fetch/axios 会被浏览器拦截
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],     # 允许的源，开发阶段允许所有源，生产环境需要指定源
-    allow_credentials=True,  # 允许携带cookie
-    allow_methods=["*"],     # 允许的请求方法
-    allow_headers=["*"],     # 允许的请求头
+    allow_origins=["*"],     # 允许的源（协议+域名+端口），* 表示允许所有源，开发阶段使用，生产环境需指定具体源
+    allow_credentials=True,  # 允许跨域请求携带 Cookie 凭证
+    allow_methods=["*"],     # 允许所有 HTTP 方法（GET/POST/PUT/DELETE 等）
+    allow_headers=["*"],     # 允许所有请求头
 )
 
 
 # 5. 根路径接口（测试服务是否启动）
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.get("/")  # 装饰器：把 root 函数注册为 GET / 的处理函数
+async def root():  # 定义异步处理函数（async 提升并发性能）
+    return {"message": "Hello World"}  # 返回字典，FastAPI 会自动把它序列化为 JSON 响应
 
 # 6. 挂载路由/注册路由
 # 把各个模块的路由对象挂载到 app 上，这样 /api/news、/api/user 等接口才生效

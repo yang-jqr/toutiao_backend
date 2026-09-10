@@ -1,9 +1,17 @@
 # ============================================================
 # schemas 层：users.py —— 用户模块请求/响应模型
+# 本文件存放用户模块的 Pydantic 模型（请求体校验 / 响应序列化）：
+#   UserRequest               —— 注册/登录请求体（username + password）
+#   UserInfoBase/UserInfoResponse —— 用户信息（基础字段 + id/username）
+#   UserAuthResponse          —— 登录/注册返回 token + userInfo
+#   UserUpdateRequest         —— 更新用户资料（只更新前端传的字段）
+#   UserChangePasswordRequest —— 修改密码（oldPassword + newPassword）
 # 职责：参数校验 + 响应数据格式化（驼峰命名给前端）
 # ============================================================
 
 from typing import Optional  # 可选类型
+
+# 请求体参数使用 pydantic 校验
 
 from pydantic import BaseModel, Field, ConfigDict  # Pydantic：模型基类 / 字段定义 / 模型配置
 

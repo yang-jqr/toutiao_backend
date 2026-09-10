@@ -20,7 +20,7 @@ class Favorite(Base):
     """
     __tablename__ = 'favorite'  # 对应数据库表名
 
-    # 创建索引
+    # 创建索引  速度更快
     # UniqueConstraint: 唯一约束, 当前用户，当前新闻，只能收藏一次
     __table_args__ = (
         UniqueConstraint('user_id', 'news_id', name='user_news_unique'),  # 同一用户同一新闻不能重复收藏
